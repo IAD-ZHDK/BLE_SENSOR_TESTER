@@ -1,7 +1,7 @@
 import P5 from 'p5'
 import P5ble from 'p5ble'
 let that
-let filtering = true
+
 class Ble {
   constructor () {
     console.log('looking for: A22A0001-AD0B-4DF2-A4E2-1745CBB4dCEE')
@@ -17,6 +17,8 @@ class Ble {
     this.sensorValues[5] = 0
     this.sensorValues[6] = 0
     this.sensorValues[7] = 0
+    this.filtering = true
+    this.factor = 0.5
     that = this
   }
 
@@ -59,9 +61,18 @@ class Ble {
     this.isConnected = false
   }
 
+  setFilter (filter) {
+    this.factor = filter
+    if (this.factor <= 0.01) {
+      this.filtering = false
+    } else {
+      this.filtering = true
+    }
+  }
+
   handleSensor (data) {
-    if (filtering) {
-      let factor = 0.01
+    if (that.filtering) {
+      let factor = that.factor
       that.sensorValues[0] = Math.floor(that.sensorValues[0] * factor)
       that.sensorValues[1] = Math.floor(that.sensorValues[1] * factor)
       that.sensorValues[2] = Math.floor(that.sensorValues[2] * factor)
@@ -76,8 +87,8 @@ class Ble {
       that.sensorValues[3] += Math.floor(data.getUint16(6, true) * (1.0 - factor))
       that.sensorValues[4] += Math.floor(data.getUint16(8, true) * (1.0 - factor))
       that.sensorValues[5] += Math.floor(data.getUint16(10, true) * (1.0 - factor))
-      that.sensorValues[6] += Math.floor(data.getUint16(11, true) * (1.0 - factor))
-      that.sensorValues[7] += Math.floor(data.getUint16(12, true) * (1.0 - factor))
+      that.sensorValues[6] += Math.floor(data.getUint16(12, true) * (1.0 - factor))
+      that.sensorValues[7] += Math.floor(data.getUint16(14, true) * (1.0 - factor))
     } else {
       that.sensorValues[0] = data.getUint16(0, true)
       that.sensorValues[1] = data.getUint16(2, true)
@@ -85,8 +96,8 @@ class Ble {
       that.sensorValues[3] = data.getUint16(6, true)
       that.sensorValues[4] = data.getUint16(8, true)
       that.sensorValues[5] = data.getUint16(10, true)
-      that.sensorValues[6] = data.getUint16(11, true)
-      that.sensorValues[7] = data.getUint16(12, true)
+      that.sensorValues[6] = data.getUint16(12, true)
+      that.sensorValues[7] = data.getUint16(14, true)
     }
   }
 }

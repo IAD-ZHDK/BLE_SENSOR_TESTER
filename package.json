@@ -72,6 +72,8 @@
     "https-localhost": "^4.5.2",
     "p5": "^1.0.0",
     "p5ble": "0.0.6",
+    "stats-js": "^1.0.0",
+    "stats.js": "^0.17.0",
     "webvr-polyfill": "^0.10.10",
     "webvr-ui": "^0.10.0"
   },

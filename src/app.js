@@ -1,5 +1,6 @@
 import './css/style.css'
 import P5 from 'p5'
+import Stats from 'stats.js'
 import Ble from './js/Ble'
 // import * as dat from 'dat.gui'
 // todo: webpack is building with html file paths defaulting to root. This should be local to make it easer to host demos with github pages
@@ -11,6 +12,7 @@ const sketch = (p) => {
   let myFont
   let myBLE
   let chanelNames = ['Battery', 'Reference', 'Ch 6', 'Ch 5', 'Ch 4', 'Ch 3', 'Ch 2', 'Ch 1']
+  let histogramImg
   let histogram = new Array(8)
   // Loop to create 2D array
   for (let i = 0; i < histogram.length; i++) {
@@ -23,11 +25,16 @@ const sketch = (p) => {
 
   // settings gui
   const dat = require('dat.gui')
-  const gui = new dat.GUI()
-  let object1 = {
-    type3_number: 0
+  p.gui = new dat.GUI()
+  p.guiObject = {
+    factor: 0.5
   }
-  gui.remember(object1)
+  // stats
+  /* Add FPS stats */
+  this.stats = new Stats()
+  this.stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
+  document.body.appendChild(this.stats.domElement)
+  // this.gui.remember(object1)
 
   p.preload = function () {
     myFont = p.loadFont('static/fonts/inconsolata.otf')
@@ -46,26 +53,16 @@ const sketch = (p) => {
       window.alert('BLE may not work in your browser. Use Chrome or check for a list of compatible browsers here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API')
     }
     // setup settings gui
-    let filter = this.gui.addFolder('filter')
-    filter.add(object1, 'type3_number', -5, 5)
+    let filter = p.gui.addFolder('filter (weighted moving average)')
+    filter.add(p.guiObject, 'factor', 0.0, 0.99) //  (weighted moving average)
     filter.open()
+    // histogram
+    histogramImg = p.createImage(p.windowWidth, p.windowHeight)
   }
 
   p.draw = function () {
     p.clear()
     if (myBLE.isConnected) {
-      // one sensor
-      // p.push()
-      // p.translate(p.windowWidth / 2, p.windowHeight / 2)
-      // let radius = p.map(myBLE.sensorValues[myBLE.sensorValues.length - 1], 0, 16384, 10, 500)
-      // p.ellipse(0, 0, radius, radius)
-      // p.text(myBLE.sensorValues[myBLE.sensorValues.length - 1], 0, p.windowHeight / 4)
-      // p.pop()
-
-      // p.textAlign(p.LEFT)
-      // p.text('battery: ' + myBLE.sensorValues[0], 20, 20)
-      // p.textAlign(p.CENTER, p.CENTER)
-      // remove first value (battery) and offset array
       let sensorValues = []
       for (let i = 0; i < myBLE.sensorValues.length - 1; i++) {
         sensorValues.push(myBLE.sensorValues[i + 1])
@@ -79,10 +76,10 @@ const sketch = (p) => {
         let radius = p.map(myBLE.sensorValues[i], 0, 16384, 10, spacing * 0.3)
         histogram[i].unshift(radius / 2)
         p.stroke(100)
-        for (let j = 0; j < histogram[i].length; j++) {
+        for (let j = 0; j < histogram[i].length - 1; j++) {
           p.line(-histogram[i][j], -j, histogram[i][j], -j)
         }
-        if (histogram[i].length > 700) {
+        if (histogram[i].length > p.windowHeight / 2) {
           histogram[i].pop([histogram[i].length])
         }
         p.ellipse(0, 0, radius, radius)
@@ -92,6 +89,7 @@ const sketch = (p) => {
         p.translate(0, p.textSize())
         p.text(chanelNames[i], 0, 0)
         p.pop()
+        myBLE.setFilter(p.guiObject.factor)
       }
     } else {
       p.translate(p.windowWidth / 2, p.windowHeight / 2)
@@ -100,7 +98,9 @@ const sketch = (p) => {
   }
 
   p.touchStarted = function () {
-    myBLE.connectAndStartNotify()
+    if (!myBLE.isConnected) {
+      myBLE.connectAndStartNotify()
+    }
   }
   p.windowResized = function () {
     p.resizeCanvas(p.windowWidth, p.windowHeight)
