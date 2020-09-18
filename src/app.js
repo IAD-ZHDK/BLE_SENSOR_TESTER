@@ -1,6 +1,5 @@
 import './css/style.css'
 import P5 from 'p5'
-import Stats from 'stats.js'
 import Ble from './js/Ble'
 // import * as dat from 'dat.gui'
 // todo: webpack is building with html file paths defaulting to root. This should be local to make it easer to host demos with github pages
@@ -12,7 +11,6 @@ const sketch = (p) => {
   let myFont
   let myBLE
   let chanelNames = ['Battery', 'Reference', 'Ch 6', 'Ch 5', 'Ch 4', 'Ch 3', 'Ch 2', 'Ch 1']
-  let histogramImg
   let histogram = new Array(8)
   // Loop to create 2D array
   for (let i = 0; i < histogram.length; i++) {
@@ -29,11 +27,6 @@ const sketch = (p) => {
   p.guiObject = {
     factor: 0.5
   }
-  // stats
-  /* Add FPS stats */
-  this.stats = new Stats()
-  this.stats.showPanel(0) // 0: fps, 1: ms, 2: mb, 3+: custom
-  document.body.appendChild(this.stats.domElement)
   // this.gui.remember(object1)
 
   p.preload = function () {
@@ -57,7 +50,6 @@ const sketch = (p) => {
     filter.add(p.guiObject, 'factor', 0.0, 0.99) //  (weighted moving average)
     filter.open()
     // histogram
-    histogramImg = p.createImage(p.windowWidth, p.windowHeight)
   }
 
   p.draw = function () {
@@ -69,19 +61,30 @@ const sketch = (p) => {
       }
       let spacing = p.windowWidth / myBLE.sensorValues.length
       p.translate((spacing / 2), p.windowHeight / 2)
-
       for (let i = 0; i < myBLE.sensorValues.length; i++) {
         p.push()
         p.translate(spacing * i, 0)
         let radius = p.map(myBLE.sensorValues[i], 0, 16384, 10, spacing * 0.3)
         histogram[i].unshift(radius / 2)
         p.stroke(100)
+        p.noFill()
+        // for (let j = 0; j < histogram[i].length - 1; j++) {
+        //  p.line(-histogram[i][j], -j, histogram[i][j], -j)
+        // }
+        // if (histogram[i].length > p.windowHeight / 2) {
+        //  histogram[i].pop([histogram[i].length])
+        // }
+        p.beginShape()
         for (let j = 0; j < histogram[i].length - 1; j++) {
-          p.line(-histogram[i][j], -j, histogram[i][j], -j)
+          p.vertex(histogram[i][j], -j)
         }
-        if (histogram[i].length > p.windowHeight / 2) {
-          histogram[i].pop([histogram[i].length])
+        p.endShape()
+        p.beginShape()
+        for (let j = 0; j < histogram[i].length - 1; j++) {
+          p.vertex(-histogram[i][j], -j)
         }
+        p.endShape()
+        p.fill(255)
         p.ellipse(0, 0, radius, radius)
         p.noStroke()
         p.translate(0, spacing / 3 * 4.0)
