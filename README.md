@@ -7,7 +7,7 @@ https://support.google.com/chrome/answer/6362090?co=GENIE.Platform%3DDesktop&hl=
 
 ## How to run demo in browser
 
-Follow this link:   www...
+Follow this link:   https://iad-zhdk.github.io/BLE_SENSOR_TESTER/dist/index.html
 
 ## How install and build code
 
