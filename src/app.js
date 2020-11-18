@@ -10,7 +10,6 @@ const sketch = (p) => {
   let y = 100
   let myFont
   let myBLE
-  let chanelNames = ['Battery', 'Reference', 'Ch 6', 'Ch 5', 'Ch 4', 'Ch 3', 'Ch 2', 'Ch 1']
   let histogram = new Array(8)
   // Loop to create 2D array
   for (let i = 0; i < histogram.length; i++) {
@@ -90,7 +89,7 @@ const sketch = (p) => {
         p.translate(0, spacing / 3 * 4.0)
         p.text(myBLE.sensorValues[i], 0, 0)
         p.translate(0, p.textSize())
-        p.text(chanelNames[i], 0, 0)
+        p.text(myBLE.chanelNames[i], 0, 0)
         p.pop()
         myBLE.setFilter(p.guiObject.factor)
       }

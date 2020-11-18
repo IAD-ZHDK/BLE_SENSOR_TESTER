@@ -4,6 +4,10 @@ let that
 
 class Ble {
   constructor () {
+    let isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime)
+    if (!isChrome) {
+      window.alert('BLE may not work in your browser. Use Chrome or check for a list of compatible browsers here: https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API')
+    }
     console.log('looking for: A22A0001-AD0B-4DF2-A4E2-1745CBB4dCEE')
     this.serviceUuid = 'A22A0001-AD0B-4DF2-A4E2-1745CBB4dCEE'
     this.myBLE = new P5ble()
@@ -17,6 +21,7 @@ class Ble {
     this.sensorValues[5] = 0
     this.sensorValues[6] = 0
     this.sensorValues[7] = 0
+    this.chanelNames = ['Battery', 'Reference', 'Ch 6', 'Ch 5', 'Ch 4', 'Ch 3', 'Ch 2', 'Ch 1']
     this.filtering = true
     this.factor = 0.5
     that = this
